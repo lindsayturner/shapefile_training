@@ -51,13 +51,16 @@ def normalize(array):
 redn = normalize(red)
 greenn = normalize(green)
 bluen = normalize(blue)
+NIR2n = normalize(NIR2)
 
 # Create RGB natural color composite
 rgb = np.dstack((redn, greenn, bluen))
+ngb = np.dstack((NIR2n, greenn, bluen))
+
 
 # Plot RGB
 plt.imshow(rgb)
-
+plt.imshow(ngb)
 
 # Create processed data folder: 
 #img_dir = 'C:/Users/linds/NOAA/shapefile_test/data_processed/'
