@@ -78,3 +78,23 @@ shapefile_fp = raw_fp + 'Lindsay_white_river_land_cover/Lindsay_white_river_land
 shapefile = gpd.read_file(shapefile_fp)
 shapefile.crs
 shapefile.bounds
+
+geoms = shapefile.geometry.values 
+
+geometry = geoms[0] 
+print(type(geometry))
+print(geometry)
+
+from shapely.geometry import mapping
+feature = [mapping(geometry)] # can also do this using polygon.__geo_interface__
+print(type(feature))
+print(feature)
+
+out_image, out_transform = mask(raster, feature, crop=True)
+out_image.shape
+
+
+
+
+
+
