@@ -1,0 +1,8 @@
+.Rhistory
+.Rproj.user
+
+data_processed/
+data_raw/
+
+*.shp
+*.tif
