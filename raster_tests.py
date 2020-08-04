@@ -62,13 +62,14 @@ ngb = np.dstack((NIR2n, greenn, bluen))
 plt.imshow(rgb)
 plt.imshow(ngb)
 
-# Create processed data folder: 
-#img_dir = 'C:/Users/linds/NOAA/shapefile_test/data_processed/'
-#if not os.path.exists(img_dir):
- #   os.makedirs(img_dir)
+# Check the dimensions and bands 
+print(raster.shape) # dimensions
+print(raster.count) # bands
 
-#img_fp = img_dir + 'sentinel_bands.tif'
-
+#clipped_img = raster.read([5,3,2])[:, 150:600, 250:1400]
+#print(clipped_img.shape)
+#fig, ax = plt.subplots(figsize=(10,7))
+#show(clipped_img[:, :, :], ax=ax, transform=raster.transform) # add the transform arg to get it in lat long coords
 
 ##############################################################################
 # SHAPEFILE
@@ -93,8 +94,34 @@ print(feature)
 out_image, out_transform = mask(raster, feature, crop=True)
 out_image.shape
 
+##############################################################################
+# RANDOM FOREST MODEL
+##############################################################################
 
+# create training pixels matrix with corresponding classname labels for rf
+X = np.array([], dtype=np.int8).reshape(0,8) # pixels for training
+y = np.array([], dtype=np.string_) # labels for training
 
+# extract the raster values within the polygon 
+with rasterio.open(raster_fp) as src:
+    band_count = src.count
+    for index, geom in enumerate(geoms):
+        feature = [mapping(geom)]
 
+        # the mask function returns an array of the raster pixels within this feature
+        out_image, out_transform = mask(src, feature, crop=True) 
+        # eliminate all the pixels with 0 values for all 8 bands - AKA not actually part of the shapefile
+        out_image_trimmed = out_image[:,~np.all(out_image == 0, axis=0)]
+        # eliminate all the pixels with 255 values for all 8 bands - AKA not actually part of the shapefile
+        out_image_trimmed = out_image_trimmed[:,~np.all(out_image_trimmed == 255, axis=0)]
+        # reshape the array to [pixel count, bands]
+        out_image_reshaped = out_image_trimmed.reshape(-1, band_count)
+        # append the labels to the y array
+        y = np.append(y,[shapefile["Classname"][index]] * out_image_reshaped.shape[0]) 
+        # stack the pizels onto the pixel array
+        X = np.vstack((X,out_image_reshaped))   
+        
+        
+        
 
 
