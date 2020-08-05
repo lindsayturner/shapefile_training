@@ -171,11 +171,63 @@ ax[1].set_title('Band Intensities Mid Ref Subset')
 # Numpy array to pd Dataframe
 import pandas as pd
 
-pd.DataFrame(data = X, index = y)
+#Convert X and y to a pd dataframe
+df_raw = pd.DataFrame(data = X, index = y)
+
+# Fix column names
+df_raw['Classname'] = df_raw.index # change classname to a column
+
+# Take the band names from the csv and rename df_raw
+col_names = pd.read_csv('data_raw/training_data_1M_sub.csv',nrows=1).columns[0:8]
+df_raw.rename(columns=dict(zip(df_raw.columns[0:8], col_names)),inplace=True)
 
 
 
+nsamples_class = 10000 # Number of samples to take from each class
+sample_seed = 42 # seed for random sample
+#training_bc = undersample_ds(dfAll, 'Classname', nsamples_class, sample_seed)
+training_bc = df_raw.groupby('Classname').apply(lambda s: s.sample(nsamples_class,
+                                                                  random_state = sample_seed))
 
 
 
+# Code below here is taken from https://github.com/lindsayturner/rf_training/blob/master/rf_training.py#L66
 
+# Define nre_func
+def nre_fun(x, y):
+    nre = (x - y) / (x + y)
+    return nre
+
+# Run NRE function on the combination of  indices that preformed best
+green_red = nre_fun(training_bc['green'], training_bc['red'])
+blue_coastal = nre_fun(training_bc['blue'], training_bc['coastal'])
+NIR2_yellow = nre_fun(training_bc['NIR2'], training_bc['yellow'])
+NIR1_red = nre_fun(training_bc['NIR1'], training_bc['red'])
+rededge_yellow = nre_fun(training_bc['rededge'], training_bc['yellow'])
+red_NIR2 = nre_fun(training_bc['red'], training_bc['NIR2'])
+rededge_NIR2 = nre_fun(training_bc['rededge'], training_bc['NIR2'])
+rededge_NIR1 = nre_fun(training_bc['rededge'], training_bc['NIR1'])
+green_NIR1 = nre_fun(training_bc['green'], training_bc['NIR1'])
+green_NIR2 = nre_fun(training_bc['green'], training_bc['NIR2'])
+rededge_green = nre_fun(training_bc['rededge'], training_bc['green'])
+rededge_red = nre_fun(training_bc['rededge'], training_bc['red'])
+yellow_NIR1 = nre_fun(training_bc['yellow'], training_bc['NIR1'])
+NIR2_blue = nre_fun(training_bc['NIR2'], training_bc['blue'])
+blue_red = nre_fun(training_bc['blue'], training_bc['red'])
+
+# Combine indices into a dataframe
+indices_df = pd.concat([green_red, blue_coastal, NIR2_yellow, NIR1_red,
+                        rededge_yellow, red_NIR2, rededge_NIR2,
+                        rededge_NIR1, green_NIR1, green_NIR2, rededge_green,
+                        rededge_red, yellow_NIR1, NIR2_blue, blue_red],
+                       axis = 1)
+
+
+feature_names = ['green red', 'blue coastal', 'NIR2 yellow', 'NIR1 red',
+              'rededge yellow', 'red NIR2', 'rededge NIR2', 'rededge NIR1',
+              'green NIR1', 'green NIR2', 'rededge green', 'rededge red',
+              'yellow NIR1', 'NIR2 blue', 'blue red']
+indices_df.columns = feature_names
+indices_df = indices_df * 10000
+indices_df['Classname'] = pd.Series(training_bc['Classname'],
+                                    index = indices_df.index)
