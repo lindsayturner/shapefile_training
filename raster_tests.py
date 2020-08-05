@@ -86,7 +86,6 @@ geometry = geoms[0]
 print(type(geometry))
 print(geometry)
 
-from shapely.geometry import mapping
 feature = [mapping(geometry)] # can also do this using polygon.__geo_interface__
 print(type(feature))
 print(feature)
@@ -99,6 +98,8 @@ out_image.shape
 ##############################################################################
 
 # create training pixels matrix with corresponding classname labels for rf
+# This segment of code is from the tutorial:
+# http://patrickgray.me/open-geo-tutorial/chapter_5_classification.html
 X = np.array([], dtype=np.int8).reshape(0,8) # pixels for training
 y = np.array([], dtype=np.string_) # labels for training
 
@@ -121,6 +122,11 @@ with rasterio.open(raster_fp) as src:
         # stack the pizels onto the pixel array
         X = np.vstack((X,out_image_reshaped))   
         
+        
+# What are our classification labels?
+labels = np.unique(shapefile["Classname"])
+print('The training data include {n} classes: {classes}\n'.format(n=labels.size, 
+                                                                classes=labels))
         
         
 
