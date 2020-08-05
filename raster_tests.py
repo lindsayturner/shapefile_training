@@ -19,12 +19,14 @@ import matplotlib.pyplot as plt
 
 import os
 
+
 ##############################################################################
 # RASTER
 ##############################################################################
 
 # Read in data:
-raw_fp = "C:/Users/linds/NOAA/shapefile_training/data_raw/" # file path to raw data folder
+#raw_fp = "C:/Users/linds/NOAA/shapefile_training/data_raw/" # file path to raw data folder
+raw_fp = "data_raw/"
 raster_fp = raw_fp + 'white_small_sub.tif' # combine with tif file
 raster = rasterio.open(raster_fp)
 type(raster)
@@ -83,6 +85,7 @@ shapefile.bounds
 geoms = shapefile.geometry.values 
 
 geometry = geoms[0] 
+
 print(type(geometry))
 print(geometry)
 
@@ -129,5 +132,50 @@ print('The training data include {n} classes: {classes}\n'.format(n=labels.size,
                                                                 classes=labels))
         
         
+
+# We will need a "X" matrix containing our features, and a "y" array containing our labels
+print('Our X matrix is sized: {sz}'.format(sz=X.shape))
+print('Our y array is sized: {sz}'.format(sz=y.shape))
+
+
+
+# Explore the spectral signatures of each class now to make sure they're actually separable
+fig, ax = plt.subplots(1,2, figsize=[20,8])
+
+# numbers 1-8
+band_count = np.arange(1,9)
+
+classes = np.unique(y)
+for class_type in classes:
+    band_intensity = np.mean(X[y==class_type, :], axis=0)
+    ax[0].plot(band_count, band_intensity, label=class_type)
+    ax[1].plot(band_count, band_intensity, label=class_type)
+# plot them as lines
+
+# Add some axis labels
+ax[0].set_xlabel('Band #')
+ax[0].set_ylabel('Reflectance Value')
+ax[1].set_ylabel('Reflectance Value')
+ax[1].set_xlabel('Band #')
+#ax[0].set_ylim(32,38)
+ax[1].set_ylim(1475,1650)
+#ax.set
+ax[1].legend(loc="upper right")
+# Add a title
+ax[0].set_title('Band Intensities Full Overview')
+ax[1].set_title('Band Intensities Mid Ref Subset')
+
+
+
+
+# Numpy array to pd Dataframe
+import pandas as pd
+
+pd.DataFrame(data = X, index = y)
+
+
+
+
+
 
 
