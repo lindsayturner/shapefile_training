@@ -127,6 +127,8 @@ with rasterio.open(raster_fp) as src:
 labels = np.unique(shapefile["Classname"])
 print('The training data include {n} classes: {classes}\n'.format(n=labels.size, 
                                                                 classes=labels))
+
+
         
         
 
