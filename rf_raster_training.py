@@ -31,6 +31,8 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
 from sklearn.inspection import permutation_importance
 from sklearn.metrics import plot_confusion_matrix
+from sklearn import metrics
+from sklearn.metrics import classification_report
 
 ##############################################################################
 # FUNCTIONS
@@ -170,12 +172,10 @@ df_raw['Classname'] = df_raw.index # change classname to a column
 # Take the band names from the csv and rename df_raw
 col_names = pd.read_csv('data_raw/training_data_1M_sub.csv',nrows=1).columns[0:8]
 df_raw.rename(columns=dict(zip(df_raw.columns[0:8], col_names)),inplace=True)
-
 nsamples_class = 10000 # Number of samples to take from each class
 sample_seed = 12 # seed for random sample
 training_bc = df_raw.groupby('Classname').apply(lambda s: s.sample(nsamples_class,
                                                                   random_state = sample_seed))
-
 # Run NRE function on the combination of  indices that preformed best
 green_red = nre_fun(training_bc['green'], training_bc['red'])
 blue_coastal = nre_fun(training_bc['blue'], training_bc['coastal'])
@@ -217,6 +217,7 @@ indices_df['Classname'] = pd.Series(training_bc['Classname'],
 
 # X data for rf
 features = indices_df
+#features.drop('Classname')
 
 # y data for rf. The y data needs to be as integers for sklearn. 
 #labels, labels_name = string_to_int(indices_df['Classname'])
@@ -244,11 +245,15 @@ result = permutation_importance(rf, X_train, y_train, random_state = 8)
 predictions = rf.predict(X_test)
 
 accuracy = accuracy_score(y_test, predictions)
-
+print(accuracy)
+print(classification_report(y_test, predictions))
 confmat = confusion_matrix(y_test, predictions)
 df_confmat = pd.DataFrame(confmat)
 plot_confusion_matrix(rf, X_test, y_test)
 
+print('Mean Absolute Error:', metrics.mean_absolute_error(y_test, predictions))
+print('Mean Squared Error:', metrics.mean_squared_error(y_test, predictions))
+print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test, predictions)))
 
 
 
