@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['rf_raster_training.py']
+recent_files = ['pyspatial_tests.py', 'rf_raster_training.py']
 
